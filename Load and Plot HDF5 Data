@@ -1,0 +1,123 @@
+## Import Modules
+%matplotlib inline
+import numpy as np
+import h5py
+from matplotlib import pyplot as plt
+import pandas as pd 
+from matplotlib.colors import ListedColormap
+from mpl_toolkits.mplot3d import Axes3D
+## Define File Path & Name
+# Path to the data
+path = '/Users/ihahn/cafecito/data/'
+# Name of the file
+fname = 'global_sample_data_snapshot_1200.hdf5'
+fcopy = '2global_sample_data_snapshot_1200.hdf5'
+## Read the file
+
+#list datasets
+with h5py.File(path+fname,'r') as h5:
+    keys = list(h5.keys())
+    for i in keys:
+        print(i)
+#select datasets
+ with h5py.File(path+fname,'r') as h5:
+    d1 = h5['stars_mass_within_r80_stars_ahf'][:]
+    d2 = h5['Xc_ahf_cat'][:]
+    d3 = h5['Yc_ahf_cat'][:]
+    d4 = h5['Zc_ahf_cat'][:]
+    d5 = h5['r80_stars_ahf'][:]
+    
+    x = d2[d1[()]>10**9]
+    y = d3[d1[()]>10**9]
+    z = d4[d1[()]>10**9]
+    c = d1[d1[()]>10**9]
+    d = d5[d1[()]>10**9]
+
+with h5py.File(path+fcopy,'w') as h5:
+   h5.create_dataset('Xc_ahf_cat_mass_over_e9', data=x)
+   h5.create_dataset('Yc_ahf_cat_mass_over_e9', data=y)
+   h5.create_dataset('Zc_ahf_cat_mass_over_e9', data=z)
+   h5.create_dataset('stars_mass_within_r80_over_e9', data=c)
+   h5.create_dataset('r80_stars_mass_over_e9', data=d)
+
+with h5py.File(path+fcopy,'r') as h5:
+    x = h5['Xc_ahf_cat_mass_over_e9'][:]
+    y = h5['Yc_ahf_cat_mass_over_e9'][:]
+plt.xlabel('Xc_ahf_cat_mass_over_e9')
+plt.ylabel('Yc_ahf_cat_mass_over_e9')
+plt.scatter(x,y, s=1)
+
+print(d)
+fig3d = plt.figure()
+ax = fig3d.add_subplot(projection='3d')
+with h5py.File(path+fcopy,'r') as h5:
+    x = h5['Xc_ahf_cat_mass_over_e9'][:]
+    y = h5['Yc_ahf_cat_mass_over_e9'][:]
+    z = h5['Zc_ahf_cat_mass_over_e9'][:]
+marker_size = 1
+fig = ax.scatter(x, y, z, s=marker_size)
+
+import seaborn as sns
+fig3d = plt.figure()
+ax = fig3d.add_subplot(projection='3d')
+with h5py.File(path+fcopy,'r') as h5:
+    x = h5['Xc_ahf_cat_mass_over_e9'][:]
+    y = h5['Yc_ahf_cat_mass_over_e9'][:]
+    z = h5['Zc_ahf_cat_mass_over_e9'][:]
+    c = np.log10(h5['stars_mass_within_r80_over_e9'][:])
+    marker_size = np.log10(h5['r80_stars_mass_over_e9'][:])
+
+
+
+
+
+
+cm = ListedColormap(sns.color_palette("plasma", 256).as_hex())
+#cm = plt.cm.get_cmap("Accent")
+ax.view_init(elev=10, azim=50)
+fig=ax.scatter(x, y, z, s=marker_size , c = c, cmap=cm )
+ax.dist=12
+ax.mouse_init()
+
+ax.set_xlabel('Xc_ahf_cat', fontsize=10, rotation=150)
+ax.set_ylabel('Yc_ahf_cat', fontsize=10)
+ax.set_zlabel('Zc_ahf_cat', fontsize=10, rotation=60)
+plt.xticks(fontsize= 7)
+plt.yticks(fontsize= 7)
+for t in ax.zaxis.get_major_ticks(): t.label.set_fontsize(7)
+plt.colorbar(fig)
+change color map for better visibility
+d histogram of distances
+and distances between each most massive galaxies pairs, np.histogram, plt.hist
+find points furthest to largest galaxy from singular point log scale , color code by distance to galaxy 
+matplotlib colorbar for scatterplots 
+
+
+
+def distance(x, y, z):
+    return np.sqrt(x**2+y**2+z**2) #define distance using just one coordinate
+
+
+x = 100
+y = 100
+z=100
+pov = np.array([x,y,z])
+
+
+with h5py.File(path+fcopy,'r') as h5:
+    xcoord = h5['Xc_ahf_cat_mass_over_e9'][:]
+    ycoord = h5['Yc_ahf_cat_mass_over_e9'][:]
+    zcoord = h5['Zc_ahf_cat_mass_over_e9'][:]
+
+    galaxy_coords = np.array([[xcoord, ycoord, zcoord]])
+    print(galaxy_coords) 
+    galaxy_coords = np.transpose(galaxy_coords)
+
+
+    new_coord = galaxy_coords - pov #defining new origin 
+    Distances = distance(new_coord[:,0], new_coord[:,1], new_coord[:,2]) #telling which columns to use from new_coords for x, y and z
+    #closest_galaxy = np.argim(distances)
+    #closest_distance = distances[closest_galaxy] 
+    
+
+ 
